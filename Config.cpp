@@ -4,68 +4,116 @@
 
 #include <iostream>
 #include <ostream>
+#include <fstream>
 
 #include "Config.h"
 #include "Task.h"
 
-Config::Config(std::vector<Machine> aMachines, std::list<Job> aJobs):
+/**
+ * Creates a new config with the given machines and jobs.
+ * @param aMachines the machines.
+ * @param aJobs the jobs.
+ */
+Config::Config(std::map<unsigned long, Machine> aMachines, std::list<Job> aJobs):
     mMachines(std::move(aMachines)),
     mJobs(std::move(aJobs))
 {}
 
+/**
+ * Parses the config from the given input string.
+ * @param input the input string to parse the config from.
+ * @return the parsed config.
+ */
 Config Config::Parse(const std::string &input) {
+    // Initializes the regular expression related stuffs.
     const std::basic_regex<char> lineRegex(R"((.*)(\r\n|\n))",
                                            std::regex_constants::ECMAScript);
     const std::basic_regex<char> configRegex(R"(^([0-9]+)\s+([0-9]+)\s*$)",
                                        std::regex_constants::ECMAScript);
     const std::basic_regex<char> taskRegex(R"(([0-9]+)\s+([0-9]+)\s*)",
                                      std::regex_constants::ECMAScript);
-
     const std::sregex_iterator end{};
 
-    std::vector<Machine> machines = {};
+    // Initializes the commonly used variables.
+    std::map<unsigned long, Machine> machines = {};
     std::basic_string<char> line, task;
     std::list<Job> jobs = {};
     std::cmatch match;
 
-
+    // Creates an iterator that iterates over all the lines of the config.
     std::sregex_iterator lineRegexIterator(input.begin(), input.end(), lineRegex);
     if (lineRegexIterator == end) {
         throw std::runtime_error("Input does not contain config line");
     }
 
+    // Gets the first line and attempts to get the basic configuration from it.
     line = lineRegexIterator->str(1);
-
     if (not std::regex_match(line.c_str(), match, configRegex)) {
         throw std::runtime_error("Input does not contain valid config line");
     }
 
+    // Gets the job and machine count from the basic configuration.
     const unsigned long jobCount = std::stoul(match.str(1));
     const unsigned long machineCount = std::stoul(match.str(2));
 
+    // Creates all the jobs and the tasks that belong to them. We assume that
+    //  the number of jobs in the config are accurate, otherwise we'll throw
+    //  an error while we're reading.
     for (unsigned long jobNo = 0; jobNo < jobCount; ++jobNo) {
+        // Attempts to get the next line.
         if ((++lineRegexIterator) == end) {
             throw std::runtime_error("Job line missing from file");
         }
-
         line = lineRegexIterator->str(1);
 
+        // Creates all the tasks that belong to the job.
         std::list<Task> tasks = {};
-
         for(std::sregex_iterator taskIterator(line.begin(), line.end(), taskRegex); taskIterator != end; ++taskIterator) {
             const unsigned long taskMachineId = std::stoul(taskIterator->str(1));
             const unsigned long taskDuration = std::stoul(taskIterator->str(2));
-
             tasks.emplace_back(taskMachineId, taskDuration);
+            if (not machines.contains(taskMachineId)) machines[taskMachineId];
         }
 
+        // Creates the job with the just created tasks.
         jobs.emplace_back(std::move(tasks));
     }
 
-    machines.reserve(machineCount);
-    for (unsigned long machineId = 0; machineId < machineCount; ++machineId) {
-        machines.emplace_back();
+    // Makes sure that the number of found machines equals the machine count.
+    if (machineCount != machines.size()) {
+        throw std::runtime_error("Machine count mismatch");
     }
 
+    // Creates the config.
     return {std::move(machines), std::move(jobs)};
+}
+
+/**
+ * Parses teh config from the given file.
+ * @param fileName the name of the file.
+ * @return the parsed config.
+ */
+Config Config::ParseFromFile(const std::string &fileName)
+{
+    // Attempts to open the config file.
+    std::ifstream configFileStream(fileName, std::ios::in);
+    if (!configFileStream.is_open()) {
+        throw std::runtime_error("Failed to open input file");
+    }
+
+    // Gets the size of the file by computing the difference between the end and
+    //  start of the file.
+    configFileStream.seekg(0, std::ios::end);
+    const long end = configFileStream.tellg();
+    configFileStream.seekg(0, std::ios::beg);
+    const long start = configFileStream.tellg();
+    const long fileSize = end - start;
+
+    // Reads the file into a temporary buffer and converts it into a string after.
+    std::unique_ptr<char[]> fileContentsBuffer = std::make_unique<char[]>(fileSize);
+    configFileStream.read(fileContentsBuffer.get(), fileSize);
+    std::basic_string<char> fileContents(fileContentsBuffer.get(), fileSize);
+
+    // Parses and returns the config file.
+    return Config::Parse(fileContents);
 }
