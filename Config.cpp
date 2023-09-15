@@ -14,9 +14,6 @@ Config::Config(std::vector<Machine> aMachines, std::list<Job> aJobs):
 {}
 
 Config Config::Parse(const std::string &input) {
-    std::vector<Machine> machines = {};
-    std::list<Job> jobs = {};
-
     const std::basic_regex<char> lineRegex(R"((.*)(\r\n|\n))",
                                            std::regex_constants::ECMAScript);
     const std::basic_regex<char> configRegex(R"(^([0-9]+)\s+([0-9]+)\s*$)",
@@ -26,11 +23,13 @@ Config Config::Parse(const std::string &input) {
 
     const std::sregex_iterator end{};
 
+    std::vector<Machine> machines = {};
     std::basic_string<char> line, task;
+    std::list<Job> jobs = {};
     std::cmatch match;
 
-    std::sregex_iterator lineRegexIterator(input.begin(), input.end(), lineRegex);
 
+    std::sregex_iterator lineRegexIterator(input.begin(), input.end(), lineRegex);
     if (lineRegexIterator == end) {
         throw std::runtime_error("Input does not contain config line");
     }
