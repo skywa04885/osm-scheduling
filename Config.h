@@ -7,17 +7,20 @@
 
 #include <regex>
 #include <vector>
+#include <list>
 
 #include "Machine.h"
+#include "Job.h"
 
 class Config
 {
 private:
     std::vector<Machine> mMachines;
+    std::list<Job> mJobs;
 public:
-    Config();
+    Config(std::vector<Machine> aMachines, std::list<Job> aJobs);
 
-    static void Parse(const std::string &input);
+    static Config Parse(const std::string &input);
 };
 
 #endif //BEROEPSPRODUCT_CONFIG_H

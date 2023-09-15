@@ -11,7 +11,7 @@ private:
     unsigned long mMachineId;
     unsigned long mDuration;
 public:
-
+    Task(unsigned long mMachineId, unsigned long mDuration) noexcept;
 };
 
 

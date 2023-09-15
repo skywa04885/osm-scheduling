@@ -7,10 +7,7 @@
 
 class Machine
 {
-private:
-    unsigned long mId;
-public:
-    explicit Machine(unsigned long aId) noexcept;
+
 };
 
 #endif //BEROEPSPRODUCT_MACHINE_H

@@ -4,6 +4,3 @@
 
 #include "Machine.h"
 
-Machine::Machine(unsigned long aId) noexcept:
-    mId(aId)
-{}
