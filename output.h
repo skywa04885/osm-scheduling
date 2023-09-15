@@ -7,13 +7,15 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-
+#include "job.h"
 
 class output {
 public:
     output();
     virtual ~output();
     static void printOutput(unsigned short id,unsigned short starttime,unsigned short endtime);
+    static void printOutput(Job job);
+
 //
 };
 
