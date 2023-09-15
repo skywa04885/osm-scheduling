@@ -10,4 +10,5 @@ output::~output() {
 }
 /*static*/ void output::printOutput(unsigned short id,unsigned short starttime,unsigned short endtime){
 std::cout << id << "  " << starttime << "  " << endtime << std::endl;
+//
 }
