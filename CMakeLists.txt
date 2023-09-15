@@ -12,4 +12,6 @@ add_executable(beroepsproduct main.cpp
         Job.h
         Task.cpp
         Task.h
+        output.cpp
+        output.h
 )
