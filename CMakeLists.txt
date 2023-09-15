@@ -14,4 +14,6 @@ add_executable(beroepsproduct main.cpp
         Task.h
         output.cpp
         output.h
+        Scheduler.cpp
+        Scheduler.h
 )
