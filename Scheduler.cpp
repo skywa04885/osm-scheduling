@@ -85,9 +85,11 @@ void Scheduler::Schedule() {
                                        machine->GetActiveTask()->GetDuration())
             return;
 
-          // Since the task has expired, remove it from the machine and add the
-          // machine to the vector of free machines.
+          // Stops the task.
+          machine->GetActiveTask()->SetEndTime(mCurrentTime);
           machine->DeleteActiveTask();
+
+          // Adds the machine to the free machines.
           freeMachines.push_back(machine);
         });
 
