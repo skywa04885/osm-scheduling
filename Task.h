@@ -6,6 +6,7 @@
 #define BEROEPSPRODUCT_TASK_H
 
 #include <iostream>
+#include <memory>
 #include <optional>
 
 class Task {
@@ -14,12 +15,26 @@ private:
   unsigned long mDuration;
   std::optional<unsigned long> mStartTime;
   std::optional<unsigned long> mEndTime;
+  std::weak_ptr<class Job> mJob;
 
 public:
   /// Constructs a new task.
-  Task(unsigned long mMachineId, unsigned long mDuration) noexcept;
+  Task(unsigned long mMachineId, unsigned long mDuration,
+       std::weak_ptr<class Job> aJob) noexcept;
 
 public:
+  [[nodiscard]] inline std::weak_ptr<class Job> &GetJob() noexcept {
+    return mJob;
+  }
+
+  [[nodiscard]] inline unsigned long GetFinishedAfterTime() const noexcept {
+    return *mStartTime + mDuration;
+  }
+
+  [[nodiscard]] inline unsigned long GetRemainingTime(unsigned long aCurrentTime) const noexcept {
+    return GetFinishedAfterTime() - aCurrentTime;
+  }
+
   /// Gets the machine id.
   [[nodiscard]] inline unsigned long GetMachineId() const noexcept {
     return mMachineId;
@@ -61,6 +76,6 @@ public:
   }
 };
 
-std::ostream &operator << (std::ostream &stream, const Task &task);
+std::ostream &operator<<(std::ostream &stream, const Task &task);
 
 #endif // BEROEPSPRODUCT_TASK_H

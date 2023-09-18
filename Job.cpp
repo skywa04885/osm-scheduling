@@ -5,18 +5,20 @@
 #include <numeric>
 
 #include "Job.h"
+#include "Task.h"
 
 /// Default constructor for the job.
-Job::Job() : mTasks(), mStartTime(std::nullopt), mEndTime(std::nullopt) {}
+Job::Job(unsigned long aId)
+    : mId(aId), mTasks(), mStartTime(std::nullopt), mEndTime(std::nullopt) {}
 
 /// Constructor for the job with tasks.
-Job::Job(std::list<std::shared_ptr<Task>> aTasks)
-    : mTasks(std::move(aTasks)), mStartTime(std::nullopt),
-      mEndTime(std::nullopt) {}
+Job::Job(unsigned long aId, std::list<std::shared_ptr<Task>> aTasks)
+    : mId(aId), mTasks(std::move(aTasks)), mEndTime(std::nullopt) {}
 
 /// Move constructor for the job.
 Job::Job(Job &&aJob) noexcept
-    : mTasks(std::move(aJob.mTasks)), mStartTime(std::move(aJob.mStartTime)),
+    : mId(aJob.mId), mTasks(std::move(aJob.mTasks)),
+      mStartTime(std::move(aJob.mStartTime)),
       mEndTime(std::move(aJob.mEndTime)) {}
 
 /// Computes the sum of all the task durations.

@@ -9,20 +9,19 @@
 #include <memory>
 #include <optional>
 
-#include "Task.h"
-
 class Job {
 private:
-  std::list<std::shared_ptr<Task>> mTasks;
+  unsigned long mId;
+  std::list<std::shared_ptr<class Task>> mTasks;
   std::optional<unsigned long> mStartTime;
   std::optional<unsigned long> mEndTime;
 
 public:
   /// Default constructor for the job.
-  Job();
+  Job(unsigned long aId);
 
   /// Constructor for the job with tasks.
-  explicit Job(std::list<std::shared_ptr<Task>> aTasks);
+  explicit Job(unsigned long aId, std::list<std::shared_ptr<class Task>> aTasks);
 
   /// Move constructor for the job.
   Job(Job &&aJob) noexcept;
@@ -31,6 +30,11 @@ public:
   [[nodiscard]] unsigned long ComputeTaskDurationSum() const;
 
 public:
+  /// Gets the id.
+  [[nodiscard]] inline unsigned long GetId() const noexcept {
+    return mId;
+  }
+
   /// Gets the list of all tasks.
   [[nodiscard]] inline std::list<std::shared_ptr<Task>> &GetTasks() noexcept {
     return mTasks;

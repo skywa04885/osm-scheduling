@@ -3,6 +3,9 @@
 //
 
 #include "Scheduler.h"
+#include "Job.h"
+#include "Machine.h"
+#include "Task.h"
 
 #include <algorithm>
 #include <iostream>
@@ -68,7 +71,7 @@ void Scheduler::Schedule() {
     //  that can receive new tasks.
     std::for_each(
         mMachines.begin(), mMachines.end(),
-        [this, &freeMachines](
+        [this, &deltaTime, &freeMachines](
             const std::pair<unsigned long, std::shared_ptr<Machine>> &aPair) {
           const std::shared_ptr<Machine> &machine = std::get<1>(aPair);
 
@@ -79,11 +82,26 @@ void Scheduler::Schedule() {
             return;
           }
 
+          std::shared_ptr<Task> task = machine->GetActiveTask();
+
           // Get the active task of the machine and check if it's expired, if it
           // is not, just return and continue to the next machine.
-          if (this->mCurrentTime < machine->GetActiveTask()->GetStartTime() +
-                                       machine->GetActiveTask()->GetDuration())
+          if (this->mCurrentTime < task->GetFinishedAfterTime())
+          {
+            if (deltaTime.has_value())
+              deltaTime = std::max(*deltaTime, task->GetRemainingTime(mCurrentTime));
+            else
+              deltaTime = task->GetRemainingTime(mCurrentTime);
+
             return;
+          }
+
+          std::shared_ptr<Job> job = task->GetJob().lock();
+
+          // Sets the stop time of the job if it is the last task.
+          if (job->GetTasks().empty()) {
+            job->SetEndTime(mCurrentTime);
+          }
 
           // Stops the task.
           machine->GetActiveTask()->SetEndTime(mCurrentTime);
@@ -109,6 +127,11 @@ void Scheduler::Schedule() {
                     std::shared_ptr<Task> task = job->GetTasks().front();
                     job->GetTasks().pop_front();
 
+                    // Sets the start time of the job.
+                    if (not job->HasStartTime())
+                      job->SetStartTime(mCurrentTime);
+
+
                     // Starts the task.
                     task->SetStartTime(mCurrentTime);
                     aMachine->SetActiveTask(task);
@@ -116,7 +139,7 @@ void Scheduler::Schedule() {
                     // If the delta time is not set, then set it to the duration
                     // of the task,
                     //  else set it to the max of the two.
-                    if (deltaTime == std::nullopt)
+                    if (not deltaTime.has_value())
                       deltaTime = task->GetDuration();
                     else
                       deltaTime = std::max(*deltaTime, task->GetDuration());

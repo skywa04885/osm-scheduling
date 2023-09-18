@@ -9,12 +9,10 @@
 #include <optional>
 #include <ostream>
 
-#include "Task.h"
-
 class Machine {
 private:
   const unsigned long mId;
-  std::optional<std::shared_ptr<Task>> mActiveTask;
+  std::optional<std::shared_ptr<class Task>> mActiveTask;
 
 public:
   /// Createsa new machine with the given id.
@@ -30,12 +28,12 @@ public:
   }
 
   /// Gets the active task.
-  [[nodiscard]] inline std::shared_ptr<Task> &GetActiveTask() noexcept {
+  [[nodiscard]] inline std::shared_ptr<class Task> &GetActiveTask() noexcept {
     return *mActiveTask;
   }
 
   /// Sets the active task.
-  inline void SetActiveTask(std::shared_ptr<Task> aTask) noexcept {
+  inline void SetActiveTask(std::shared_ptr<class Task> aTask) noexcept {
     mActiveTask = std::move(aTask);
   }
 

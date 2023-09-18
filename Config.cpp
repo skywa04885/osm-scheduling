@@ -8,6 +8,8 @@
 
 #include "Config.h"
 #include "Task.h"
+#include "Machine.h"
+#include "Job.h"
 
 /**
  * Creates a new config with the given machines and jobs.
@@ -65,19 +67,20 @@ Config Config::Parse(const std::string &input) {
     }
     line = lineRegexIterator->str(1);
 
+    std::shared_ptr<Job> job = std::make_shared<Job>(jobNo);
+
     // Creates all the tasks that belong to the job.
-    std::list<std::shared_ptr<Task>> tasks = {};
     for (std::sregex_iterator taskIterator(line.begin(), line.end(), taskRegex);
          taskIterator != end; ++taskIterator) {
       const unsigned long taskMachineId = std::stoul(taskIterator->str(1));
       const unsigned long taskDuration = std::stoul(taskIterator->str(2));
-      tasks.push_back(std::make_shared<Task>(taskMachineId, taskDuration));
+      job->GetTasks().push_back(std::make_shared<Task>(taskMachineId, taskDuration, job));
       if (machines.find(taskMachineId) == machines.end())
         machines[taskMachineId] = std::make_shared<Machine>(taskMachineId);
     }
 
     // Creates the job with the just created tasks.
-    jobs.push_back(std::make_shared<Job>(std::move(tasks)));
+    jobs.push_back(std::move(job));
   }
 
   // Makes sure that the number of found machines equals the machine count.
