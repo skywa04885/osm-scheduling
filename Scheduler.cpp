@@ -56,7 +56,7 @@ Scheduler::SelectJobForMachine(unsigned long aMachineId) {
 void Scheduler::Schedule() {
   std::vector<std::shared_ptr<Machine>> freeMachines = {};
 
-  freeMachines.resize(mMachines.size());
+  freeMachines.reserve(mMachines.size());
 
   while (true) {
     std::optional<unsigned long> deltaTime = std::nullopt;
@@ -81,12 +81,8 @@ void Scheduler::Schedule() {
 
           // Get the active task of the machine and check if it's expired, if it
           // is not, just return and continue to the next machine.
-          std::tuple<std::shared_ptr<Task>, unsigned long> &activeTaskTuple =
-              machine->GetActiveTask();
-          std::shared_ptr<Task> &activeTask = std::get<0>(activeTaskTuple);
-          unsigned long activeTaskStartingTime = std::get<1>(activeTaskTuple);
-          if (this->mCurrentTime <
-              activeTaskStartingTime + activeTask->GetDuration())
+          if (this->mCurrentTime < machine->GetActiveTask()->GetStartTime() +
+                                       machine->GetActiveTask()->GetDuration())
             return;
 
           // Since the task has expired, remove it from the machine and add the
@@ -111,10 +107,9 @@ void Scheduler::Schedule() {
                     std::shared_ptr<Task> task = job->GetTasks().front();
                     job->GetTasks().pop_front();
 
-                    // Sets the active task of the machine with the starting
-                    // time being the current time.
-                    aMachine->SetActiveTask(
-                        std::make_tuple(task, mCurrentTime));
+                    // Starts the task.
+                    task->SetStartTime(mCurrentTime);
+                    aMachine->SetActiveTask(task);
 
                     // If the delta time is not set, then set it to the duration
                     // of the task,

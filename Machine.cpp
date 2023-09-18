@@ -4,7 +4,7 @@
 
 #include "Machine.h"
 
-Machine::Machine(unsigned long aId) : mId(aId) {}
+Machine::Machine(unsigned long aId) : mId(aId), mActiveTask(std::nullopt) {}
 
 std::ostream &operator<<(std::ostream &stream, const Machine &machine) {
   stream << "Machine {";
