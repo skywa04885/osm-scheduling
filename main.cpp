@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "Config.h"
+#include "Scheduler.h"
 
 int main(int argc, char *argv[]) {
     // Makes sure that the config file is given.
@@ -11,6 +12,10 @@ int main(int argc, char *argv[]) {
 
     // Parses the config from the file.
     Config config = Config::ParseFromFile(argv[1]);
+
+
+    Scheduler scheduler(config.GetJobsAndMove(), config.GetMachinesAndMove());
+    scheduler.Schedule();
 
     return 0;
 }

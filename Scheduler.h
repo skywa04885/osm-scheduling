@@ -6,17 +6,29 @@
 #define BEROEPSPRODUCT_SCHEDULER_H
 
 #include <map>
-#include <list>
+#include <optional>
+#include <tuple>
+#include <vector>
 
-#include "Task.h"
 #include "Job.h"
 #include "Machine.h"
+#include "Task.h"
 
 class Scheduler {
 private:
-    std::map<unsigned int, Machine> mMachines;
-    std::list<Job> mJobs;
+  std::list<std::shared_ptr<Job>> mJobs;
+  std::map<unsigned long, std::shared_ptr<Machine>> mMachines;
+  unsigned long mCurrentTime;
+
+public:
+  Scheduler(std::list<std::shared_ptr<Job>> aJobs,
+            std::map<unsigned long, std::shared_ptr<Machine>> aMachines);
+
+  /// Selects a job for the given machine based on the least slack algorithm.
+std::optional<std::shared_ptr<Job>>
+  SelectJobForMachine(unsigned long aMachineId);
+
+  void Schedule();
 };
 
-
-#endif //BEROEPSPRODUCT_SCHEDULER_H
+#endif // BEROEPSPRODUCT_SCHEDULER_H

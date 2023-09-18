@@ -2,16 +2,29 @@
 // Created by luke on 9/15/23.
 //
 
+#include <numeric>
+
 #include "Job.h"
 
-Job::Job():
-    mTasks()
-{}
+/// Default constructor for the job.
+Job::Job() : mTasks(), mStartTime(0), mEndTime(0) {}
 
-Job::Job(std::list<Task> aTasks):
-    mTasks(std::move(aTasks))
-{}
+/// Constructor for the job with tasks.
+Job::Job(std::list<std::shared_ptr<Task>> aTasks)
+    : mTasks(std::move(aTasks)), mStartTime(0), mEndTime(0) {}
 
-Job::Job(Job &&aJob) noexcept :
-    mTasks(std::move(aJob.mTasks))
-{}
+/// Move constructor for the job.
+Job::Job(Job &&aJob) noexcept
+    : mTasks(std::move(aJob.mTasks)), mStartTime(aJob.mStartTime),
+      mEndTime(aJob.mEndTime) {}
+
+/// Computes the sum of all the task durations.
+[[nodiscard]] unsigned long Job::ComputeTaskDurationSum() const {
+  const auto accumulator =
+      [](unsigned long sum,
+         const std::shared_ptr<Task> &task) -> unsigned long {
+    return sum + task->GetDuration();
+  };
+
+  return std::accumulate(mTasks.cbegin(), mTasks.cend(), 0UL, accumulator);
+}

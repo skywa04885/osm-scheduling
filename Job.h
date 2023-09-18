@@ -6,20 +6,33 @@
 #define BEROEPSPRODUCT_JOB_H
 
 #include <list>
+#include <memory>
 
-#include "Job.h"
 #include "Task.h"
 
 class Job {
 private:
-    std::list<Task> mTasks;
+  std::list<std::shared_ptr<Task>> mTasks;
+  unsigned long mStartTime;
+  unsigned long mEndTime;
+
 public:
-    Job();
+  /// Default constructor for the job.
+  Job();
 
-    explicit Job(std::list<Task> aTasks);
+  /// Constructor for the job with tasks.
+  explicit Job(std::list<std::shared_ptr<Task>> aTasks);
 
-    Job(Job &&aJob) noexcept;
+  /// Move constructor for the job.
+  Job(Job &&aJob) noexcept;
+
+  /// Computes the sum of all the task durations.
+  [[nodiscard]] unsigned long ComputeTaskDurationSum() const;
+
+  /// Gets the list of all the tasks.
+  [[nodiscard]] inline std::list<std::shared_ptr<Task>> &GetTasks() noexcept {
+    return mTasks;
+  }
 };
 
-
-#endif //BEROEPSPRODUCT_JOB_H
+#endif // BEROEPSPRODUCT_JOB_H

@@ -4,8 +4,8 @@
 
 #include "Scheduler.h"
 
-#include <algorithm>
 #include <iostream>
+#include <algorithm>
 #include <tuple>
 
 Scheduler::Scheduler(
@@ -54,15 +54,10 @@ Scheduler::SelectJobForMachine(unsigned long aMachineId) {
 }
 
 void Scheduler::Schedule() {
-  std::vector<std::shared_ptr<Machine>> freeMachines = {};
-
-  freeMachines.resize(mMachines.size());
-
   while (true) {
     std::optional<unsigned long> deltaTime = std::nullopt;
 
-    // Frees the free machines (lol).
-    freeMachines.clear();
+    std::vector<std::shared_ptr<Machine>> freeMachines = {};
 
     // Stops all the tasks that have finished, and create the vector of tasks
     //  that can receive new tasks.
@@ -96,34 +91,36 @@ void Scheduler::Schedule() {
         });
 
     // Starts all the tasks if needed.
-    std::for_each(freeMachines.begin(), freeMachines.end(),
-                  [&deltaTime, this](const std::shared_ptr<Machine> &aMachine) {
-                    // Gets the job that should be executed for the machine.
-                    //  If no job could be found just return and continue to the
-                    //  next machine.
-                    std::optional<std::shared_ptr<Job>> optionalJob =
-                        this->SelectJobForMachine(aMachine->GetId());
-                    if (not optionalJob.has_value())
-                      return;
-                    std::shared_ptr<Job> &job = *optionalJob;
+    std::for_each(
+        freeMachines.begin(), freeMachines.end(),
+        [&deltaTime,
+         this](const std::shared_ptr<Machine> &aMachine) {
+          // Gets the job that should be executed for the machine.
+          //  If no job could be found just return and continue to the next
+          //  machine.
+          std::optional<std::shared_ptr<Job>> optionalJob =
+              this->SelectJobForMachine(aMachine->GetId());
+          if (not optionalJob.has_value())
+            return;
+          std::shared_ptr<Job> &job = *optionalJob;
 
-                    // Gets the task that should be executed.
-                    std::shared_ptr<Task> task = job->GetTasks().front();
-                    job->GetTasks().pop_front();
+          // Gets the task that should be executed.
+          std::shared_ptr<Task> task = job->GetTasks().front();
+          job->GetTasks().pop_front();
 
-                    // Sets the active task of the machine with the starting
-                    // time being the current time.
-                    aMachine->SetActiveTask(
-                        std::make_tuple(task, mCurrentTime));
+          // Sets the active task of the machine with the starting time being
+          // the current time.
+          aMachine->SetActiveTask(std::make_tuple(task, mCurrentTime));
+          std::cout << "Executing task " << (*task) << std::endl;
 
-                    // If the delta time is not set, then set it to the duration
-                    // of the task,
-                    //  else set it to the max of the two.
-                    if (deltaTime == std::nullopt)
-                      deltaTime = task->GetDuration();
-                    else
-                      deltaTime = std::max(*deltaTime, task->GetDuration());
-                  });
+          // If the delta time is not set, then set it to the duration of the
+          // task,
+          //  else set it to the max of the two.
+          if (deltaTime == std::nullopt)
+            deltaTime = task->GetDuration();
+          else
+            deltaTime = std::max(*deltaTime, task->GetDuration());
+        });
 
     // If the delta time is null, we know that no tasks have been performed, so
     // nothing has been enqueued.
@@ -132,5 +129,6 @@ void Scheduler::Schedule() {
 
     // Adds the delta time to the current time.
     mCurrentTime += *deltaTime;
+    std::cout << "Current time increased to " << mCurrentTime << "s" << std::endl;
   }
 }

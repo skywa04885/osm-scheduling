@@ -14,7 +14,7 @@
  * @param aMachines the machines.
  * @param aJobs the jobs.
  */
-Config::Config(std::map<unsigned long, Machine> aMachines, std::list<Job> aJobs):
+Config::Config(std::map<unsigned long, std::shared_ptr<Machine>> aMachines, std::list<std::shared_ptr<Job>> aJobs):
     mMachines(std::move(aMachines)),
     mJobs(std::move(aJobs))
 {}
@@ -35,9 +35,9 @@ Config Config::Parse(const std::string &input) {
     const std::sregex_iterator end{};
 
     // Initializes the commonly used variables.
-    std::map<unsigned long, Machine> machines = {};
+    std::map<unsigned long, std::shared_ptr<Machine>> machines = {};
     std::basic_string<char> line, task;
-    std::list<Job> jobs = {};
+    std::list<std::shared_ptr<Job>> jobs = {};
     std::cmatch match;
 
     // Creates an iterator that iterates over all the lines of the config.
@@ -67,16 +67,17 @@ Config Config::Parse(const std::string &input) {
         line = lineRegexIterator->str(1);
 
         // Creates all the tasks that belong to the job.
-        std::list<Task> tasks = {};
+        std::list<std::shared_ptr<Task>> tasks = {};
         for(std::sregex_iterator taskIterator(line.begin(), line.end(), taskRegex); taskIterator != end; ++taskIterator) {
             const unsigned long taskMachineId = std::stoul(taskIterator->str(1));
             const unsigned long taskDuration = std::stoul(taskIterator->str(2));
-            tasks.emplace_back(taskMachineId, taskDuration);
-            if (not machines.contains(taskMachineId)) machines[taskMachineId];
+            tasks.push_back(std::make_shared<Task>(taskMachineId, taskDuration));
+            if (machines.find(taskMachineId) == machines.end())
+                machines[taskMachineId] = std::make_shared<Machine>(taskMachineId);
         }
 
         // Creates the job with the just created tasks.
-        jobs.emplace_back(std::move(tasks));
+        jobs.push_back(std::make_shared<Job>(std::move(tasks)));
     }
 
     // Makes sure that the number of found machines equals the machine count.

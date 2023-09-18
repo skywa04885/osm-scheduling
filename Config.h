@@ -15,15 +15,15 @@
 class Config
 {
 private:
-    std::map<unsigned long, Machine> mMachines;
-    std::list<Job> mJobs;
+    std::map<unsigned long, std::shared_ptr<Machine>> mMachines;
+    std::list<std::shared_ptr<Job>> mJobs;
 public:
     /**
      * Creates a new config with the given machines and jobs.
      * @param aMachines the machines.
      * @param aJobs the jobs.
      */
-    Config(std::map<unsigned long, Machine> aMachines, std::list<Job> aJobs);
+    Config(std::map<unsigned long, std::shared_ptr<Machine>> aMachines, std::list<std::shared_ptr<Job>> aJobs);
 
     /**
      * Parses the config from the given input string.
@@ -38,6 +38,14 @@ public:
      * @return the parsed config.
      */
     static Config ParseFromFile(const std::string &fileName);
+
+    inline std::map<unsigned long, std::shared_ptr<Machine>> GetMachinesAndMove() noexcept {
+        return std::move(mMachines);
+    }
+
+    inline std::list<std::shared_ptr<Job>> GetJobsAndMove() noexcept {
+        return std::move(mJobs);
+    }
 };
 
 #endif //BEROEPSPRODUCT_CONFIG_H
