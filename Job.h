@@ -33,6 +33,14 @@ public:
   [[nodiscard]] inline std::list<std::shared_ptr<Task>> &GetTasks() noexcept {
     return mTasks;
   }
+
+  [[nodiscard]] inline unsigned long GetStartTime() const noexcept {
+    return mStartTime;
+  }
+
+  [[nodiscard]] inline unsigned long GetEndTime() const noexcept {
+    return mEndTime;
+  }
 };
 
 #endif // BEROEPSPRODUCT_JOB_H

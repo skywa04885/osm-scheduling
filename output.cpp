@@ -6,9 +6,13 @@
 
 output::output() {}
 
-output::~output() {
+output::~output() {}
+/*static*/ void output::printOutput(unsigned short id, unsigned short starttime,
+                                    unsigned short endtime) {
+  std::cout << id << "  " << starttime << "  " << endtime << std::endl;
 }
-/*static*/ void output::printOutput(unsigned short id,unsigned short starttime,unsigned short endtime){
-std::cout << id << "  " << starttime << "  " << endtime << std::endl;
-//
+
+/*static*/ void output::printOutput(Job job) {
+  std::cout << "  " << job.GetStartTime() << "  " << job.GetEndTime()
+            << std::endl;
 }
