@@ -23,8 +23,8 @@ int main(int argc, char *argv[]) {
   for (const std::shared_ptr<Job> &job : scheduler.GetJobs())
     std::cout << (*job) << std::endl;
 
-  ToUML toUml("../test.plantuml");
-  toUml.Render(scheduler.GetMachines(), scheduler.GetTasks());
+  // ToUML toUml("../test.plantuml");
+  // toUml.Render(scheduler.GetMachines(), scheduler.GetTasks());
 
   return 0;
 }
