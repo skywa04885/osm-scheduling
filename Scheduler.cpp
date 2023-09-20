@@ -11,6 +11,7 @@
 #include <iostream>
 #include <tuple>
 
+/// Creates a new scheduler.
 Scheduler::Scheduler(
     std::list<std::shared_ptr<Job>> aJobs,
     std::map<unsigned long, std::shared_ptr<Machine>> aMachines)
@@ -144,11 +145,11 @@ std::optional<unsigned long> Scheduler::GetNearestEventTime() {
   return nearestEventTime;
 }
 
+/// Schedules the jobs.
 void Scheduler::Schedule() {
   std::optional<unsigned long> nearestEventTime = 0UL;
 
   do {
-    // Updates the current time.
     mCurrentTime = nearestEventTime.value();
 
     // Stops all the finished tasks.

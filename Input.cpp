@@ -6,26 +6,18 @@
 #include <iostream>
 #include <ostream>
 
-#include "Config.h"
-#include "Task.h"
-#include "Machine.h"
+#include "Input.h"
 #include "Job.h"
+#include "Machine.h"
+#include "Task.h"
 
-/**
- * Creates a new config with the given machines and jobs.
- * @param aMachines the machines.
- * @param aJobs the jobs.
- */
-Config::Config(std::map<unsigned long, std::shared_ptr<Machine>> aMachines,
-               std::list<std::shared_ptr<Job>> aJobs)
+/// Creates a new input instance.
+Input::Input(std::map<unsigned long, std::shared_ptr<Machine>> aMachines,
+             std::list<std::shared_ptr<Job>> aJobs)
     : mMachines(std::move(aMachines)), mJobs(std::move(aJobs)) {}
 
-/**
- * Parses the config from the given input string.
- * @param input the input string to parse the config from.
- * @return the parsed config.
- */
-Config Config::Parse(const std::string &input) {
+/// Parses the input from the given string.
+Input Input::Parse(const std::string &input) {
   // Initializes the regular expression related stuffs.
   const std::basic_regex<char> lineRegex(R"((.*)(\r\n|\n))",
                                          std::regex_constants::ECMAScript);
@@ -74,7 +66,8 @@ Config Config::Parse(const std::string &input) {
          taskIterator != end; ++taskIterator) {
       const unsigned long taskMachineId = std::stoul(taskIterator->str(1));
       const unsigned long taskDuration = std::stoul(taskIterator->str(2));
-      job->GetTasks().push_back(std::make_shared<Task>(taskMachineId, taskDuration, job));
+      job->GetTasks().push_back(
+          std::make_shared<Task>(taskMachineId, taskDuration, job));
       if (machines.find(taskMachineId) == machines.end())
         machines[taskMachineId] = std::make_shared<Machine>(taskMachineId);
     }
@@ -92,12 +85,8 @@ Config Config::Parse(const std::string &input) {
   return {std::move(machines), std::move(jobs)};
 }
 
-/**
- * Parses teh config from the given file.
- * @param fileName the name of the file.
- * @return the parsed config.
- */
-Config Config::ParseFromFile(const std::string &fileName) {
+/// Parses the input from the given file.
+Input Input::ParseFromFile(const std::string &fileName) {
   // Attempts to open the config file.
   std::ifstream configFileStream(fileName, std::ios::in);
   if (!configFileStream.is_open()) {
@@ -119,5 +108,5 @@ Config Config::ParseFromFile(const std::string &fileName) {
   std::basic_string<char> fileContents(fileContentsBuffer.get(), fileSize);
 
   // Parses and returns the config file.
-  return Config::Parse(fileContents);
+  return Input::Parse(fileContents);
 }

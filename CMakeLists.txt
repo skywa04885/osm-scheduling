@@ -4,18 +4,16 @@ project(beroepsproduct)
 set(CMAKE_CXX_STANDARD 23)
 
 add_executable(beroepsproduct main.cpp
-        Config.h
-        Config.cpp
-        Machine.h
-        Machine.cpp
-        Job.cpp
-        Job.h
-        Task.cpp
-        Task.h
-        output.cpp
-        output.h
-        Scheduler.cpp
-        Scheduler.h
-        Output.cpp
-        Output.hpp
+  Input.h
+  Input.cpp
+  Machine.h
+  Machine.cpp
+  Job.cpp
+  Job.h
+  Task.cpp
+  Task.h
+  Scheduler.cpp
+  Scheduler.h
+  Output.cpp
+  Output.hpp
 )

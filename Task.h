@@ -22,14 +22,17 @@ public:
        std::weak_ptr<class Job> aJob) noexcept;
 
 public:
+  /// Gets the job.
   [[nodiscard]] inline std::weak_ptr<class Job> &GetJob() noexcept {
     return mJob;
   }
 
+  /// Gets the end time of the task.
   [[nodiscard]] inline unsigned long GetEndTime() const noexcept {
-    return *mStartTime + mDuration;
+    return GetStartTime() + mDuration;
   }
 
+  /// Gets the remaining time of the task.
   [[nodiscard]] inline unsigned long GetRemainingTime(unsigned long aCurrentTime) const noexcept {
     return GetEndTime() - aCurrentTime;
   }
@@ -55,11 +58,16 @@ public:
   }
 
   /// Gets the start time.
-  [[nodiscard]] inline unsigned long GetStartTime() const noexcept {
+  [[nodiscard]] inline unsigned long GetStartTime() const {
+    if (not HasStartTime()) {
+      throw std::runtime_error("Start time used but not set");
+    }
+
     return *mStartTime;
   }
 };
 
+/// Output stream overload for task.
 std::ostream &operator<<(std::ostream &stream, const Task &task);
 
 #endif // BEROEPSPRODUCT_TASK_H

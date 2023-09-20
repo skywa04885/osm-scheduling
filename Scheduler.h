@@ -19,6 +19,7 @@ private:
   unsigned long mCurrentTime;
 
 public:
+  /// Creates a new scheduler.
   Scheduler(std::list<std::shared_ptr<class Job>> aJobs,
             std::map<unsigned long, std::shared_ptr<Machine>> aMachines);
 
@@ -35,9 +36,11 @@ public:
   /// Gets the time of the nearest event.
   std::optional<unsigned long> GetNearestEventTime();
 
+  /// Schedules the jobs.
   void Schedule();
 
 public:
+  /// Gets the list of all jobs.
   [[nodiscard]] inline const std::list<std::shared_ptr<class Job>> &
   GetJobs() const noexcept {
     return mJobs;

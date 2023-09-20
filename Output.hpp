@@ -5,17 +5,16 @@
 
 #include <fstream>
 
-#include "Job.h"
-
-class Output
-{
+class Output {
 private:
   std::ofstream mOutputFileStream;
+
 public:
+  /// Constructs a new output for the given file name.
   Output(const std::string &aOutputFileName);
 
-  Output &operator << (const Job &aJob);
+  /// Writes a job to the output file.
+  Output &operator<<(const class Job &aJob);
 };
 
 #endif // BEROEPSPRODUCT_OUTPUT_H
-
