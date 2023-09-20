@@ -5,12 +5,12 @@
 #ifndef BEROEPSPRODUCT_SCHEDULER_H
 #define BEROEPSPRODUCT_SCHEDULER_H
 
+#include <list>
 #include <map>
+#include <memory>
 #include <optional>
 #include <tuple>
 #include <vector>
-#include <list>
-#include <memory>
 
 class Scheduler {
 private:
@@ -22,13 +22,24 @@ public:
   Scheduler(std::list<std::shared_ptr<class Job>> aJobs,
             std::map<unsigned long, std::shared_ptr<Machine>> aMachines);
 
-  /// Selects a job for the given machine based on the least slack algorithm.
-std::optional<std::shared_ptr<class Job>>
-  SelectJobForMachine(unsigned long aMachineId);
+  /// Selects a task for the given machine based on the least slack algorithm.
+  std::optional<std::shared_ptr<class Task>>
+  SelectTaskForMachine(unsigned long aMachineId);
+
+  /// Stops all the tasks if they're finished.
+  void StopFinishedTasks();
+
+  /// Starts tasks.
+  void StartTasks();
+
+  /// Gets the time of the nearest event.
+  std::optional<unsigned long> GetNearestEventTime();
 
   void Schedule();
+
 public:
-  [[nodiscard]] inline const std::list<std::shared_ptr<class Job>> &GetJobs() const noexcept {
+  [[nodiscard]] inline const std::list<std::shared_ptr<class Job>> &
+  GetJobs() const noexcept {
     return mJobs;
   }
 };

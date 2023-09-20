@@ -7,7 +7,7 @@
 Task::Task(unsigned long mMachineId, unsigned long mDuration,
            std::weak_ptr<class Job> aJob) noexcept
     : mMachineId(mMachineId), mDuration(mDuration), mStartTime(std::nullopt),
-      mEndTime(std::nullopt), mJob(aJob) {}
+      mJob(aJob) {}
 
 std::ostream &operator<<(std::ostream &stream, const Task &task) {
   stream << "Task {";

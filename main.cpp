@@ -19,9 +19,9 @@ int main(int argc, char *argv[]) {
 
   Output output(argv[2]);
 
-  std::for_each(
-      scheduler.GetJobs().cbegin(), scheduler.GetJobs().cend(),
-      [&output](const std::shared_ptr<Job> &job) { output << (*job); });
+  for (std::shared_ptr<Job> job : scheduler.GetJobs()) {
+    output << (*job);
+  }
 
   return 0;
 }

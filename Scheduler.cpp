@@ -17,8 +17,8 @@ Scheduler::Scheduler(
     : mJobs(aJobs), mMachines(aMachines), mCurrentTime(0UL) {}
 
 /// Selects a job for the given machine based on the least slack algorithm.
-std::optional<std::shared_ptr<Job>>
-Scheduler::SelectJobForMachine(unsigned long aMachineId) {
+std::optional<std::shared_ptr<Task>>
+Scheduler::SelectTaskForMachine(unsigned long aMachineId) {
   std::vector<std::tuple<std::shared_ptr<Job>, unsigned long>> jobCadidates =
       {};
   std::vector<std::tuple<std::shared_ptr<Job>, unsigned long>>::iterator
@@ -52,105 +52,109 @@ Scheduler::SelectJobForMachine(unsigned long aMachineId) {
     return std::nullopt;
   }
 
-  // Returns the selected job candidate.
-  return std::get<0>(*selectedJobCandidate);
+  // Gets the job candidate and the task, after which the task gets
+  //  removed from the job.
+  std::shared_ptr<Job> &job = std::get<0>(*selectedJobCandidate);
+  std::shared_ptr<Task> task = job->GetTasks().front();
+  job->GetTasks().pop_front();
+
+  // Returns the task.
+  return std::move(task);
+}
+
+/// Stops all the tasks if they're finished.
+void Scheduler::StopFinishedTasks() {
+  for (std::pair<unsigned long, std::shared_ptr<Machine>> pair : mMachines) {
+    // Gets the machine and checks if it has an active task. If it does not,
+    //  just ignore the machine.
+    std::shared_ptr<Machine> &machine = std::get<1>(pair);
+    if (not machine->HasActiveTask())
+      continue;
+
+    // Gets the machine's active task, if the task is not finished yet
+    //  don't do anything.
+    std::shared_ptr<Task> task = machine->GetActiveTask();
+    if (this->mCurrentTime < task->GetEndTime())
+      continue;
+
+    // Deletes the active task from the machine.
+    machine->DeleteActiveTask();
+
+    // Gets the job and don't do anything if it still has tasks.
+    std::shared_ptr<Job> job = task->GetJob().lock();
+    if (job->HasTasks())
+      continue;
+
+    // Sets the end time of the job since there are no tasks remaining.
+    job->SetEndTime(mCurrentTime);
+  }
+}
+
+/// Starts tasks.
+void Scheduler::StartTasks() {
+  for (std::pair<unsigned long, std::shared_ptr<Machine>> pair : mMachines) {
+    // Gets the machine.
+    std::shared_ptr<Machine> machine = std::get<1>(pair);
+    if (machine->HasActiveTask())
+      continue;
+
+    // Selects a task for the machine, if none could be found just continue.
+    std::optional<std::shared_ptr<Task>> optionalTask =
+        SelectTaskForMachine(machine->GetId());
+    if (not optionalTask.has_value())
+      continue;
+
+    // Gets the task and the job it belongs to.
+    std::shared_ptr<Task> task = *optionalTask;
+    std::shared_ptr<Job> job = task->GetJob().lock();
+
+    // Sets the starting time of the task and possibly the starting time
+    //  of the job (if it's starting time has not been set yet).
+    task->SetStartTime(mCurrentTime);
+    if (not job->HasStartTime())
+      job->SetStartTime(mCurrentTime);
+
+    // Sets the task as the active task of the machine.
+    machine->SetActiveTask(std::move(task));
+  }
+}
+
+/// Gets the time of the nearest event.
+std::optional<unsigned long> Scheduler::GetNearestEventTime() {
+  std::optional<unsigned long> nearestEventTime = std::nullopt;
+
+  for (std::pair<unsigned long, std::shared_ptr<Machine>> pair : mMachines) {
+    // Gets the machine, if the machine does not have an active task just ignore
+    // it.
+    std::shared_ptr<Machine> machine = std::get<1>(pair);
+    if (not machine->HasActiveTask())
+      continue;
+
+    // Gets the active task from the machine.
+    std::shared_ptr<Task> task = machine->GetActiveTask();
+
+    // Sets the nearest event time to the minimum of the existing nearest
+    //  event time and the new event time.
+    if (nearestEventTime.has_value())
+      nearestEventTime = std::min(nearestEventTime.value(), task->GetEndTime());
+    else
+      nearestEventTime = task->GetEndTime();
+  }
+
+  return nearestEventTime;
 }
 
 void Scheduler::Schedule() {
-  std::vector<std::shared_ptr<Machine>> freeMachines = {};
+  std::optional<unsigned long> nearestEventTime = 0UL;
 
-  freeMachines.reserve(mMachines.size());
+  do {
+    // Updates the current time.
+    mCurrentTime = nearestEventTime.value();
 
-  while (true) {
-    std::optional<unsigned long> deltaTime = std::nullopt;
+    // Stops all the finished tasks.
+    StopFinishedTasks();
 
-    // Frees the free machines (lol).
-    freeMachines.clear();
-
-    // Stops all the tasks that have finished, and create the vector of tasks
-    //  that can receive new tasks.
-    std::for_each(
-        mMachines.begin(), mMachines.end(),
-        [this, &deltaTime, &freeMachines](
-            const std::pair<unsigned long, std::shared_ptr<Machine>> &aPair) {
-          const std::shared_ptr<Machine> &machine = std::get<1>(aPair);
-
-          // If the machine does not have a current task, it's free anyways, so
-          // add it to the vector of free machines.
-          if (not machine->HasActiveTask()) {
-            freeMachines.push_back(machine);
-            return;
-          }
-
-          std::shared_ptr<Task> task = machine->GetActiveTask();
-
-          // Get the active task of the machine and check if it's expired, if it
-          // is not, just return and continue to the next machine.
-          if (this->mCurrentTime < task->GetFinishedAfterTime())
-          {
-            if (deltaTime.has_value())
-              deltaTime = std::max(*deltaTime, task->GetRemainingTime(mCurrentTime));
-            else
-              deltaTime = task->GetRemainingTime(mCurrentTime);
-
-            return;
-          }
-
-          std::shared_ptr<Job> job = task->GetJob().lock();
-
-          // Sets the stop time of the job if it is the last task.
-          if (job->GetTasks().empty()) {
-            job->SetEndTime(mCurrentTime);
-          }
-
-          // Stops the task.
-          machine->GetActiveTask()->SetEndTime(mCurrentTime);
-          machine->DeleteActiveTask();
-
-          // Adds the machine to the free machines.
-          freeMachines.push_back(machine);
-        });
-
-    // Starts all the tasks if needed.
-    std::for_each(freeMachines.begin(), freeMachines.end(),
-                  [&deltaTime, this](const std::shared_ptr<Machine> &aMachine) {
-                    // Gets the job that should be executed for the machine.
-                    //  If no job could be found just return and continue to the
-                    //  next machine.
-                    std::optional<std::shared_ptr<Job>> optionalJob =
-                        this->SelectJobForMachine(aMachine->GetId());
-                    if (not optionalJob.has_value())
-                      return;
-                    std::shared_ptr<Job> &job = *optionalJob;
-
-                    // Gets the task that should be executed.
-                    std::shared_ptr<Task> task = job->GetTasks().front();
-                    job->GetTasks().pop_front();
-
-                    // Sets the start time of the job.
-                    if (not job->HasStartTime())
-                      job->SetStartTime(mCurrentTime);
-
-
-                    // Starts the task.
-                    task->SetStartTime(mCurrentTime);
-                    aMachine->SetActiveTask(task);
-
-                    // If the delta time is not set, then set it to the duration
-                    // of the task,
-                    //  else set it to the max of the two.
-                    if (not deltaTime.has_value())
-                      deltaTime = task->GetDuration();
-                    else
-                      deltaTime = std::max(*deltaTime, task->GetDuration());
-                  });
-
-    // If the delta time is null, we know that no tasks have been performed, so
-    // nothing has been enqueued.
-    if (deltaTime == std::nullopt)
-      break;
-
-    // Adds the delta time to the current time.
-    mCurrentTime += *deltaTime;
-  }
+    // Starts tasks.
+    StartTasks();
+  } while ((nearestEventTime = GetNearestEventTime()).has_value());
 }

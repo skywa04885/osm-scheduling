@@ -14,7 +14,6 @@ private:
   unsigned long mMachineId;
   unsigned long mDuration;
   std::optional<unsigned long> mStartTime;
-  std::optional<unsigned long> mEndTime;
   std::weak_ptr<class Job> mJob;
 
 public:
@@ -27,12 +26,12 @@ public:
     return mJob;
   }
 
-  [[nodiscard]] inline unsigned long GetFinishedAfterTime() const noexcept {
+  [[nodiscard]] inline unsigned long GetEndTime() const noexcept {
     return *mStartTime + mDuration;
   }
 
   [[nodiscard]] inline unsigned long GetRemainingTime(unsigned long aCurrentTime) const noexcept {
-    return GetFinishedAfterTime() - aCurrentTime;
+    return GetEndTime() - aCurrentTime;
   }
 
   /// Gets the machine id.
@@ -50,29 +49,14 @@ public:
     return mStartTime.has_value();
   }
 
-  /// Checks if the end time has a value.
-  [[nodiscard]] inline bool HasEndTime() const noexcept {
-    return mEndTime.has_value();
-  }
-
   /// Sets the start time.
   inline void SetStartTime(unsigned long aStartTime) noexcept {
     mStartTime = aStartTime;
   }
 
-  /// Sets the start time.
-  inline void SetEndTime(unsigned long aEndTime) noexcept {
-    mEndTime = aEndTime;
-  }
-
   /// Gets the start time.
   [[nodiscard]] inline unsigned long GetStartTime() const noexcept {
     return *mStartTime;
-  }
-
-  /// Gets the end time.
-  [[nodiscard]] inline unsigned long GetEndTime() const noexcept {
-    return *mEndTime;
   }
 };
 

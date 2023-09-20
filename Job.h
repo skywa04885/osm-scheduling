@@ -35,6 +35,11 @@ public:
     return mId;
   }
 
+  /// Checcks if there are any remaining tasks.
+  [[nodiscard]] inline bool HasTasks() const noexcept {
+    return not mTasks.empty();
+  }
+
   /// Gets the list of all tasks.
   [[nodiscard]] inline std::list<std::shared_ptr<Task>> &GetTasks() noexcept {
     return mTasks;
