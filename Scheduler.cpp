@@ -15,17 +15,18 @@
 Scheduler::Scheduler(
     std::list<std::shared_ptr<Job>> aJobs,
     std::map<unsigned long, std::shared_ptr<Machine>> aMachines)
-    : mJobs(aJobs), mMachines(aMachines), mCurrentTime(0UL) {}
+    : mJobs(std::move(aJobs)), mMachines(std::move(aMachines)),
+      mCurrentTime(0UL) {}
 
 /// Selects a job for the given machine based on the least slack algorithm.
 std::optional<std::shared_ptr<Task>>
 Scheduler::SelectTaskForMachine(unsigned long aMachineId) {
   std::vector<std::tuple<std::shared_ptr<Job>, unsigned long>> jobCadidates =
       {};
-  std::vector<std::tuple<std::shared_ptr<Job>, unsigned long>>::iterator
-      selectedJobCandidate = jobCadidates.end();
+  std::optional<std::tuple<std::shared_ptr<Job>, unsigned long>>
+      selectedJobCandidate = std::nullopt;
 
-  // Fills the vector with job candidates.
+  // Fills the vector with job candidates and their durations.
   std::for_each(
       mJobs.begin(), mJobs.end(),
       [&jobCadidates, aMachineId](std::shared_ptr<Job> &aJob) -> void {
@@ -41,15 +42,31 @@ Scheduler::SelectTaskForMachine(unsigned long aMachineId) {
       });
 
   // Gets the iterator to job with the longest duration.
-  selectedJobCandidate = std::max_element(
-      jobCadidates.begin(), jobCadidates.end(),
-      [](const std::tuple<std::shared_ptr<Job>, unsigned long> &aLHS,
-         const std::tuple<std::shared_ptr<Job>, unsigned long> &aRHS) -> bool {
-        return std::get<1>(aLHS) < std::get<1>(aRHS);
-      });
+  for (std::tuple<std::shared_ptr<Job>, unsigned long> &jobCandidate :
+       jobCadidates) {
+    // If there is no selected job candidate yet, use the current one.
+    if (not selectedJobCandidate.has_value()) {
+      selectedJobCandidate = jobCandidate;
+      continue;
+    }
+
+    // If the duration is longer, make it the new selected candidate.
+    if (std::get<1>(jobCandidate) > std::get<1>(*selectedJobCandidate)) {
+      selectedJobCandidate = jobCandidate;
+      continue;
+    }
+
+    // If the duration is the same and the id is less than the selected
+    //  candidate, make it the selected candidate.
+    if ((std::get<1>(jobCandidate) == std::get<1>(*selectedJobCandidate)) &&
+        (std::get<0>(jobCandidate)->GetId() <
+         std::get<0>(*selectedJobCandidate)->GetId())) {
+      selectedJobCandidate = jobCandidate;
+    }
+  }
 
   // If there is no job with the longest duration return a nullopt.
-  if (selectedJobCandidate == jobCadidates.end()) {
+  if (not selectedJobCandidate.has_value()) {
     return std::nullopt;
   }
 

@@ -18,8 +18,8 @@ Job::Job(unsigned long aId, std::list<std::shared_ptr<Task>> aTasks)
 /// Move constructor for the job.
 Job::Job(Job &&aJob) noexcept
     : mId(aJob.mId), mTasks(std::move(aJob.mTasks)),
-      mStartTime(std::move(aJob.mStartTime)),
-      mEndTime(std::move(aJob.mEndTime)) {}
+      mStartTime(aJob.mStartTime),
+      mEndTime(aJob.mEndTime) {}
 
 /// Computes the sum of all the task durations.
 [[nodiscard]] unsigned long Job::ComputeTaskDurationSum() const {
