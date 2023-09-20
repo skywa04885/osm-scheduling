@@ -6,9 +6,9 @@
 
 /// Constructs a new task.
 Task::Task(unsigned long mMachineId, unsigned long mDuration,
-           std::weak_ptr<class Job> aJob) noexcept
-    : mMachineId(mMachineId), mDuration(mDuration), mStartTime(std::nullopt),
-      mJob(std::move(aJob)) {}
+           unsigned long mTaskNo, std::weak_ptr<class Job> aJob) noexcept
+    : mMachineId(mMachineId), mDuration(mDuration), mTaskNo(mTaskNo),
+      mStartTime(std::nullopt), mJob(std::move(aJob)) {}
 
 /// Output stream overload for task.
 std::ostream &operator<<(std::ostream &stream, const Task &task) {

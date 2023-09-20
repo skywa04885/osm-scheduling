@@ -15,6 +15,7 @@
 class Scheduler {
 private:
   std::list<std::shared_ptr<class Job>> mJobs;
+  std::list<std::shared_ptr<class Task>> mTasks;
   std::map<unsigned long, std::shared_ptr<class Machine>> mMachines;
   unsigned long mCurrentTime;
 
@@ -44,6 +45,17 @@ public:
   [[nodiscard]] inline const std::list<std::shared_ptr<class Job>> &
   GetJobs() const noexcept {
     return mJobs;
+  }
+
+  [[nodiscard]] inline const std::list<std::shared_ptr<class Task>> &
+  GetTasks() const noexcept {
+    return mTasks;
+  }
+
+  [[nodiscard]] inline const std::map<unsigned long,
+                                      std::shared_ptr<class Machine>> &
+  GetMachines() const noexcept {
+    return mMachines;
   }
 };
 

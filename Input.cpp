@@ -62,12 +62,13 @@ Input Input::Parse(const std::string &input) {
     std::shared_ptr<Job> job = std::make_shared<Job>(jobNo);
 
     // Creates all the tasks that belong to the job.
+    unsigned long taskNo = 0;
     for (std::sregex_iterator taskIterator(line.begin(), line.end(), taskRegex);
          taskIterator != end; ++taskIterator) {
       const unsigned long taskMachineId = std::stoul(taskIterator->str(1));
       const unsigned long taskDuration = std::stoul(taskIterator->str(2));
       job->GetTasks().push_back(
-          std::make_shared<Task>(taskMachineId, taskDuration, job));
+          std::make_shared<Task>(taskMachineId, taskDuration, taskNo++, job));
       if (machines.find(taskMachineId) == machines.end())
         machines[taskMachineId] = std::make_shared<Machine>(taskMachineId);
     }

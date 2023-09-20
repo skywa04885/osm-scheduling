@@ -13,12 +13,13 @@ class Task {
 private:
   unsigned long mMachineId;
   unsigned long mDuration;
+  unsigned long mTaskNo;
   std::optional<unsigned long> mStartTime;
   std::weak_ptr<class Job> mJob;
 
 public:
   /// Constructs a new task.
-  Task(unsigned long mMachineId, unsigned long mDuration,
+  Task(unsigned long mMachineId, unsigned long mDuration, unsigned long mTaskNo,
        std::weak_ptr<class Job> aJob) noexcept;
 
 public:
@@ -45,6 +46,11 @@ public:
   /// Gets the duration.
   [[nodiscard]] inline unsigned long GetDuration() const noexcept {
     return mDuration;
+  }
+
+  /// Gets the task no.
+  [[nodiscard]] inline unsigned long GetTaskNo() const noexcept {
+    return mTaskNo;
   }
 
   /// Checks if the start time has a value.

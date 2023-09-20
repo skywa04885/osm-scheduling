@@ -1,8 +1,9 @@
 #include <iostream>
 
 #include "Input.h"
-#include "Scheduler.h"
 #include "Job.h"
+#include "Scheduler.h"
+#include "ToUML.h"
 
 int main(int argc, char *argv[]) {
   // Makes sure the arguments are specified.
@@ -21,6 +22,9 @@ int main(int argc, char *argv[]) {
   // Prints the output.
   for (const std::shared_ptr<Job> &job : scheduler.GetJobs())
     std::cout << (*job) << std::endl;
+
+  ToUML toUml("../test.plantuml");
+  toUml.Render(scheduler.GetMachines(), scheduler.GetTasks());
 
   return 0;
 }

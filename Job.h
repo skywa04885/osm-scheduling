@@ -13,6 +13,7 @@
 class Job {
 private:
   unsigned long mId;
+  bool mActive;
   std::list<std::shared_ptr<class Task>> mTasks;
   std::optional<unsigned long> mStartTime;
   std::optional<unsigned long> mEndTime;
@@ -22,7 +23,8 @@ public:
   Job(unsigned long aId);
 
   /// Constructor for the job with tasks.
-  explicit Job(unsigned long aId, std::list<std::shared_ptr<class Task>> aTasks);
+  explicit Job(unsigned long aId,
+               std::list<std::shared_ptr<class Task>> aTasks);
 
   /// Move constructor for the job.
   Job(Job &&aJob) noexcept;
@@ -31,10 +33,14 @@ public:
   [[nodiscard]] unsigned long ComputeTaskDurationSum() const;
 
 public:
+  /// Gets if the job is active.
+  [[nodiscard]] inline bool GetIsActive() const noexcept { return mActive; }
+
+  // Sets if the job is active.
+  inline void SetIsActive(bool aActive) noexcept { mActive = aActive; }
+
   /// Gets the id.
-  [[nodiscard]] inline unsigned long GetId() const noexcept {
-    return mId;
-  }
+  [[nodiscard]] inline unsigned long GetId() const noexcept { return mId; }
 
   /// Checcks if there are any remaining tasks.
   [[nodiscard]] inline bool HasTasks() const noexcept {
@@ -78,6 +84,6 @@ public:
 };
 
 /// Output stream overload to display job.
-std::ostream &operator << (std::ostream &aStream, const Job &aJob);
+std::ostream &operator<<(std::ostream &aStream, const Job &aJob);
 
 #endif // BEROEPSPRODUCT_JOB_H

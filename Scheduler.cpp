@@ -15,7 +15,7 @@
 Scheduler::Scheduler(
     std::list<std::shared_ptr<Job>> aJobs,
     std::map<unsigned long, std::shared_ptr<Machine>> aMachines)
-    : mJobs(std::move(aJobs)), mMachines(std::move(aMachines)),
+    : mJobs(std::move(aJobs)), mTasks(), mMachines(std::move(aMachines)),
       mCurrentTime(0UL) {}
 
 /// Selects a job for the given machine based on the least slack algorithm.
@@ -31,6 +31,10 @@ Scheduler::SelectTaskForMachine(unsigned long aMachineId) {
       mJobs.begin(), mJobs.end(),
       [&jobCadidates, aMachineId](std::shared_ptr<Job> &aJob) -> void {
         if (aJob->GetTasks().empty())
+          return;
+
+        // If the job is already active, return.
+        if (aJob->GetIsActive())
           return;
 
         std::shared_ptr<Task> &task = aJob->GetTasks().front();
@@ -76,6 +80,9 @@ Scheduler::SelectTaskForMachine(unsigned long aMachineId) {
   std::shared_ptr<Task> task = job->GetTasks().front();
   job->GetTasks().pop_front();
 
+  // Sets the job to active.
+  job->SetIsActive(true);
+
   // Returns the task.
   return std::move(task);
 }
@@ -95,11 +102,15 @@ void Scheduler::StopFinishedTasks() {
     if (this->mCurrentTime < task->GetEndTime())
       continue;
 
+    // Pushes the task to the list of finished tasks.
+    mTasks.push_back(task);
+
     // Deletes the active task from the machine.
     machine->DeleteActiveTask();
 
     // Gets the job and don't do anything if it still has tasks.
     std::shared_ptr<Job> job = task->GetJob().lock();
+    job->SetIsActive(false);
     if (job->HasTasks())
       continue;
 
