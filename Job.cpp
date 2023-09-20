@@ -28,3 +28,13 @@ Job::Job(Job &&aJob) noexcept
       [](unsigned long sum, const std::shared_ptr<Task> &task)
           -> unsigned long { return sum + task->GetDuration(); });
 }
+
+/// Output stream overload to display job.
+std::ostream &operator << (std::ostream &aStream, const Job &aJob) {
+  aStream << aJob.GetId();
+  aStream << ' ' << aJob.GetStartTime();
+  aStream << ' ' << aJob.GetEndTime();
+
+  return aStream;
+}
+

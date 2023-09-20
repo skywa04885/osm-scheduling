@@ -1,24 +1,26 @@
 #include <iostream>
 
 #include "Input.h"
-#include "Output.hpp"
 #include "Scheduler.h"
+#include "Job.h"
 
 int main(int argc, char *argv[]) {
-  if (argc < 3) {
-    std::cerr << "Input and output file have not been specified" << std::endl;
+  // Makes sure the arguments are specified.
+  if (argc < 2) {
+    std::cerr << "Input file has not been specified" << std::endl;
     return -1;
   }
 
-  Input config = Input::ParseFromFile(argv[1]);
+  // Loads the input from the file.
+  Input input = Input::ParseFromFile(argv[1]);
 
-  Scheduler scheduler(config.GetJobsAndMove(), config.GetMachinesAndMove());
+  // Creates the scheduler and performs the scheduling.
+  Scheduler scheduler(input.GetJobsAndMove(), input.GetMachinesAndMove());
   scheduler.Schedule();
 
-  Output output(argv[2]);
-
-  for (std::shared_ptr<Job> job : scheduler.GetJobs())
-    output << (*job);
+  // Prints the output.
+  for (const std::shared_ptr<Job> &job : scheduler.GetJobs())
+    std::cout << (*job) << std::endl;
 
   return 0;
 }

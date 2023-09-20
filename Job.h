@@ -8,6 +8,7 @@
 #include <list>
 #include <memory>
 #include <optional>
+#include <ostream>
 
 class Job {
 private:
@@ -75,5 +76,8 @@ public:
     return *mEndTime;
   }
 };
+
+/// Output stream overload to display job.
+std::ostream &operator << (std::ostream &aStream, const Job &aJob);
 
 #endif // BEROEPSPRODUCT_JOB_H
